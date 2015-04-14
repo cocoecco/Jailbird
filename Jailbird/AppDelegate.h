@@ -7,6 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <SpriteKit/SpriteKit.h>
+#import <AVFoundation/AVFoundation.h>
+#import <FacebookSDK/FacebookSDK.h>
+#import "vunglepub.embeddedframework/vunglepub.framework/Headers/vunglepub.h"
+
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 

@@ -8,39 +8,90 @@
 
 #import "AppDelegate.h"
 
+#define APP_HANDLED_URL @"fb1452824361614893"
+
 @implementation AppDelegate
+
+
+
+-(void)vungleStart
+{
+    VGUserData*  data  = [VGUserData defaultUserData];
+    NSString*    appID = @"826116883";
+    
+    // set up config data
+    data.age             = 36;
+    data.gender          = VGGenderFemale;
+    data.adOrientation   = VGAdOrientationPortrait;
+    data.locationEnabled = TRUE;
+    
+    // start vungle publisher library
+    [VGVunglePub startWithPubAppID:appID userData:data];
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+    [FBLoginView class];
+    [self vungleStart];
     return YES;
 }
-							
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication
+         annotation:(id)annotation {
+    BOOL wasHandled = [FBAppCall handleOpenURL:url sourceApplication:sourceApplication];
+    return wasHandled;
+}
+
+
 - (void)applicationWillResignActive:(UIApplication *)application
 {
-    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-    // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
+    [[AVAudioSession sharedInstance] setActive:NO error:nil];
+    SKView *view = (SKView *)self.window.rootViewController.view;
+    view.paused = YES;
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
 {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    [[AVAudioSession sharedInstance] setActive:NO error:nil];
+    SKView *view = (SKView *)self.window.rootViewController.view;
+    view.paused = YES;
+
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
-    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+    [[AVAudioSession sharedInstance] setActive:YES error:nil];
+    NSUserDefaults *infoSaved = [NSUserDefaults standardUserDefaults];
+    NSString *isRating = [infoSaved objectForKey:@"IsRating"];
+    
+    if ([isRating isEqualToString:@"YES"]) {
+        UIAlertView *noPM = [[UIAlertView alloc] initWithTitle:@"Store" message:@"Thank you for rating us!\n As a thank you we've added 1 'Revive' to your account for free!" delegate:nil cancelButtonTitle:@"Awesome!" otherButtonTitles:nil, nil];
+        noPM.delegate = self;
+        noPM.tag = 2;
+        [noPM show];
+        
+        [infoSaved setObject:@"NO" forKey:@"IsRating"];
+        [infoSaved synchronize];
+    }
+    
+    SKView *view = (SKView *)self.window.rootViewController.view;
+    view.paused = NO;
+    
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    SKView *view = (SKView *)self.window.rootViewController.view;
+    view.paused = NO;
+    [[AVAudioSession sharedInstance] setActive:YES error:nil];
+
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {
-    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    [VGVunglePub stop];
+    [FBSession.activeSession close];
 }
 
 @end
